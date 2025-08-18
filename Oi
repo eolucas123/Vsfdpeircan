@@ -28,8 +28,8 @@ const splashScreen = document.createElement('splashScreen');
 window.features = {
     questionSpoof: true,
     videoSpoof: true,
-    showAnswers: false,
-    autoAnswer: false,
+    showAnswers: true,
+    autoAnswer: true,
     customBanner: false,
     nextRecomendation: false,
     repeatQuestion: false,
@@ -37,7 +37,7 @@ window.features = {
     rgbLogo: false
 };
 window.featureConfigs = {
-    autoAnswerDelay: 3,
+    autoAnswerDelay: 1,
     customUsername: "",
     customPfp: ""
 };
