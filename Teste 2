@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala do Futuro - Bot de Atividades</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .bot-message {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Login Section (Visible by default) -->
+        <div id="loginSection" class="flex flex-col items-center justify-center min-h-[70vh]">
+            <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden p-8 space-y-6">
+                <div class="text-center">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e7c8f24b-8cd5-4863-9862-5ae4411ebe80.png" alt="Sala do Futuro Logo Oficial" class="mx-auto h-24 w-24 mb-4 rounded-lg">
+                    <h1 class="text-3xl font-bold text-gray-800">Acesso Sala do Futuro</h1>
+                    <p class="text-gray-600 mt-2">Entre para gerenciar atividades escolares com nosso assistente</p>
+                </div>
+                
+                <form id="loginForm" class="space-y-4">
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700">Usuário</label>
+                        <input type="text" id="username" name="username" required 
+                               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                    </div>
+                    
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">Senha</label>
+                        <input type="password" id="password" name="password" required 
+                               class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                    </div>
+                    
+                    <div>
+                        <label for="role" class="block text-sm font-medium text-gray-700">Tipo de Conta</label>
+                        <select id="role" name="role" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <option value="student">Aluno</option>
+                            <option value="teacher">Professor</option>
+                            <option value="parent">Responsável</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Entrar
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Bot Dashboard (Hidden until login) -->
+        <div id="botDashboard" class="hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-3">
+                    <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/369ca636-111b-4d47-9c84-65451c8aa415.png" alt="User profile picture - Circular user avatar with initials" class="h-12 w-12 rounded-full">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800" id="welcomeMessage"></h2>
+                        <p class="text-sm text-gray-500" id="currentDate"></p>
+                    </div>
+                </div>
+                <button id="logoutBtn" class="px-4 py-2 text-sm text-red-600 hover:text-red-800 font-medium transition">Sair</button>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Left Panel - Chat Interface -->
+                <div class="md:col-span-2 bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="p-4 bg-blue-600 text-white">
+                        <h3 class="font-semibold">Bot de Atividades</h3>
+                    </div>
+                    
+                    <!-- Chat Messages Container -->
+                    <div id="chatContainer" class="h-96 overflow-y-auto p-4 space-y-4 bg-gray-50">
+                        <div class="bot-message p-3 max-w-[80%] bg-blue-100 rounded-lg rounded-tl-none text-gray-800">
+                            <p>Olá! Eu sou o assistente da Sala do Futuro. Posso te ajudar com atividades, provas e comunicação escolar.</p>
+                            <p class="text-xs text-gray-500 mt-1">11:30 AM</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="border-t border-gray-200 p-4 bg-white">
+                        <div class="flex space-x-2">
+                            <input type="text" id="messageInput" placeholder="Digite sua mensagem..." 
+                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <button id="sendMessageBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                                Enviar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Panel - Activities -->
+                <div class="space-y-6">
+                    <!-- Upcoming Activities -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-4 bg-green-600 text-white">
+                            <h3 class="font-semibold">Atividades Pendentes</h3>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <div id="activitiesList">
+                                <!-- Activities will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-4 bg-purple-600 text-white">
+                            <h3 class="font-semibold">Ações Rápidas</h3>
+                        </div>
+                        <div class="p-4 grid grid-cols-2 gap-3">
+                            <button class="action-btn bg-blue-100 text-blue-800 p-3 rounded-lg hover:bg-blue-200 transition" 
+                                    data-action="list-homework">
+                                Listar Tarefas
+                            </button>
+                            <button class="action-btn bg-green-100 text-green-800 p-3 rounded-lg hover:bg-green-200 transition" 
+                                    data-action="new-homework">
+                                Nova Tarefa
+                            </button>
+                            <button class="action-btn bg-yellow-100 text-yellow-800 p-3 rounded-lg hover:bg-yellow-200 transition" 
+                                    data-action="calendar">
+                                Ver Calendário
+                            </button>
+                            <button class="action-btn bg-red-100 text-red-800 p-3 rounded-lg hover:bg-red-200 transition" 
+                                    data-action="help">
+                                Ajuda
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Bot Status -->
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="p-4 bg-gray-800 text-white">
+                            <h3 class="font-semibold">Status do Bot</h3>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Próxima Atualização:</span>
+                                <span class="font-medium" id="nextUpdateTime">15:00</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Tarefas Concluídas:</span>
+                                <span class="font-medium" id="completedTasks">2/5</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        const sampleActivities = [
+            { id: 1, title: "Matemática - Exercícios página 152", due: "15/06", status: "pending" },
+            { id: 2, title: "História - Pesquisa sobre Independência", due: "17/06", status: "pending" },
+            { id: 3, title: "Química - Relatório de laboratório", due: "18/06", status: "in-progress" },
+            { id: 4, title: "Português - Redação dissertativa", due: "20/06", status: "pending" },
+            { id: 5, title: "Geografia - Mapa da região sudeste", due: "22/06", status: "pending" }
+        ];
+
+        const botResponses = {
+            "saudação": ["Olá aluno! Como posso ajudar com suas atividades?", "Bom dia! Preparado para as aulas de hoje?", "Oi! Vamos organizar seu dia escolar?"],
+            "tarefas": ["Atividades da Sala do Futuro:", "Tarefas escolares pendentes:"],
+            "ajuda": ["Posso ajudar com:\n1. Listar tarefas\n2. Adicionar nova atividade\n3. Ver calendário", "Meu objetivo é te ajudar a gerenciar suas atividades escolares. O que precisa?"],
+            "default": ["Entendi. Vou processar sua solicitação.", "Parece importante! Vou verificar.", "Ok, estou trabalhando nisso."]
+        };
+
+        // DOM Elements
+        const loginSection = document.getElementById('loginSection');
+        const botDashboard = document.getElementById('botDashboard');
+        const loginForm = document.getElementById('loginForm');
+        const welcomeMessage = document.getElementById('welcomeMessage');
+        const currentDate = document.getElementById('currentDate');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendMessageBtn = document.getElementById('sendMessageBtn');
+        const activitiesList = document.getElementById('activitiesList');
+        const nextUpdateTime = document.getElementById('nextUpdateTime');
+        const completedTasks = document.getElementById('completedTasks');
+        const actionButtons = document.querySelectorAll('.action-btn');
+
+        // Set current date
+        const today = new Date();
+        currentDate.textContent = today.toLocaleDateString('pt-BR', { 
+            weekday: 'long', 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+        });
+
+        // Load sample activities
+        function loadActivities() {
+            activitiesList.innerHTML = '';
+            sampleActivities.forEach(activity => {
+                const statusColor = activity.status === 'pending' ? 'bg-red-100 text-red-800' : 
+                                   activity.status === 'in-progress' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+                
+                const activityElement = document.createElement('div');
+                activityElement.className = 'activity-card flex items-start p-3 border border-gray-200 rounded-lg hover:shadow transition cursor-pointer';
+                activityElement.innerHTML = `
+                    <div class="flex-shrink-0 mt-1 mr-3">
+                        <div class="h-2 w-2 rounded-full ${statusColor}"></div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-medium">${activity.title}</h4>
+                        <p class="text-xs text-gray-500">Entrega: ${activity.due}</p>
+                    </div>
+                    <div class="flex-shrink-0 ml-2">
+                        <button class="mark-complete text-xs text-blue-600 hover:text-blue-800" data-id="${activity.id}">Concluir</button>
+                    </div>
+                `;
+                activitiesList.appendChild(activityElement);
+            });
+            
+            // Update completed tasks count
+            completedTasks.textContent = `0/${sampleActivities.length}`;
+        }
+
+        // Add bot message to chat
+        function addBotMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'bot-message p-3 max-w-[80%] bg-blue-100 rounded-lg rounded-tl-none text-gray-800';
+            messageDiv.innerHTML = `
+                <p>${text}</p>
+                <p class="text-xs text-gray-500 mt-1">${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</p>
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Add user message to chat
+        function addUserMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex justify-end';
+            messageDiv.innerHTML = `
+                <div class="p-3 max-w-[80%] bg-gray-200 rounded-lg rounded-tr-none text-gray-800">
+                    <p>${text}</p>
+                    <p class="text-xs text-gray-500 mt-1 text-right">${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</p>
+                </div>
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Process user input and generate bot response
+        function processUserInput(input) {
+            addUserMessage(input);
+            
+            // Simple NLP for demo purposes
+            setTimeout(() => {
+                let response;
+                input = input.toLowerCase();
+                
+                if (input.includes('oi') || input.includes('olá') || input.includes('bom dia')) {
+                    const randomIndex = Math.floor(Math.random() * botResponses["saudação"].length);
+                    response = botResponses["saudação"][randomIndex];
+                } 
+                else if (input.includes('tarefa') || input.includes('atividade') || input.includes('dever')) {
+                    response = botResponses["tarefas"][0];
+                    if (sampleActivities.length > 0) {
+                        response += "\n\n- " + sampleActivities.map(a => a.title).join("\n- ");
+                    } else {
+                        response = "Você não tem tarefas pendentes no momento.";
+                    }
+                }
+                else if (input.includes('ajuda') || input.includes('comando') || input.includes('opção')) {
+                    response = botResponses["ajuda"][0];
+                }
+                else {
+                    const randomIndex = Math.floor(Math.random() * botResponses["default"].length);
+                    response = botResponses["default"][randomIndex];
+                }
+                
+                addBotMessage(response);
+            }, 800);
+        }
+
+        // Event Listeners
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const role = document.getElementById('role').value;
+            
+            // Simple validation
+            if (username) {
+                // Hide login, show dashboard
+                loginSection.classList.add('hidden');
+                botDashboard.classList.remove('hidden');
+                
+                // Set welcome message based on role
+                let roleText = "";
+                switch(role) {
+                    case 'student': roleText = "Aluno"; break;
+                    case 'teacher': roleText = "Professor"; break;
+                    case 'parent': roleText = "Responsável"; break;
+                }
+                
+                welcomeMessage.textContent = `Bem-vindo, ${username} (${roleText})`;
+                loadActivities();
+                
+                // Initial bot greeting
+                setTimeout(() => {
+                    addBotMessage(botResponses["saudação"][0]);
+                }, 500);
+            }
+        });
+
+        logoutBtn.addEventListener('click', function() {
+            botDashboard.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            chatContainer.innerHTML = `
+                <div class="bot-message p-3 max-w-[80%] bg-blue-100 rounded-lg rounded-tl-none text-gray-800">
+                    <p>Olá! Eu sou seu assistente de atividades escolares. Como posso te ajudar hoje?</p>
+                    <p class="text-xs text-gray-500 mt-1">${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})}</p>
+                </div>
+            `;
+            loginForm.reset();
+        });
+
+        sendMessageBtn.addEventListener('click', function() {
+            const message = messageInput.value.trim();
+            if (message) {
+                processUserInput(message);
+                messageInput.value = '';
+            }
+        });
+
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessageBtn.click();
+            }
+        });
+
+        // Action buttons
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.getAttribute('data-action');
+                let message = "";
+                
+                switch(action) {
+                    case 'list-homework':
+                        message = "Mostre minhas tarefas pendentes";
+                        break;
+                    case 'new-homework':
+                        message = "Como posso adicionar uma nova tarefa?";
+                        break;
+                    case 'calendar':
+                        message = "Mostre meu calendário de atividades";
+                        break;
+                    case 'help':
+                        message = "Preciso de ajuda";
+                        break;
+                }
+                
+                if (message) {
+                    processUserInput(message);
+                }
+            });
+        });
+
+        // Mark activity as complete
+        activitiesList.addEventListener('click', function(e) {
+            if (e.target.classList.contains('mark-complete')) {
+                const activityId = parseInt(e.target.getAttribute('data-id'));
+                const activityIndex = sampleActivities.findIndex(a => a.id === activityId);
+                
+                if (activityIndex !== -1) {
+                    sampleActivities.splice(activityIndex, 1);
+                    loadActivities();
+                    addBotMessage(`Atividade marcada como concluída. Ótimo trabalho!`);
+                }
+            }
+        });
+
+        // Set random next update time between 5 and 60 minutes from now
+        const randomMinutes = Math.floor(Math.random() * 55) + 5;
+        const nextUpdate = new Date(today.getTime() + randomMinutes * 60000);
+        nextUpdateTime.textContent = nextUpdate.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+    </script>
+</body>
+</html>
