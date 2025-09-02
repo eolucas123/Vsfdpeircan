@@ -1,0 +1,78 @@
+import requests
+from bs4 import BeautifulSoup
+
+def fazer_lição(ra, senha):
+    # Endereço da página de login do Futuro SP
+    url_login = "http://sala.smpsp.com.br/login.php"
+    
+    # Dados de login
+    dados_login = {
+        "ra": ra,
+        "senha": senha
+    }
+    
+    # Enviar requisição de login
+    resposta_login = requests.post(url_login, data=dados_login)
+    
+    # Verificar se o login foi bem-sucedido
+    if resposta_login.status_code == 200:
+        print("Login bem-sucedido!")
+        
+        # Endereço da página das lições
+        url_lições = "http://sala.smpsp.com.br/lições.php"
+        
+        # Enviar requisição para obter a página das lições
+        resposta_lições = requests.get(url_lições)
+        
+        # Extrair informações das lições
+        soup = BeautifulSoup(resposta_lições.text, "html.parser")
+        lições = soup.find_all("li")
+        
+        # Realizar as lições
+        for lição in lições:
+            # Extrair o título da lição
+            título = lição.find("span").text
+            
+            # Realizar a lição (escolha uma das opções abaixo)
+            # Opção 1: Fazer a lição automaticamente (não é recomendado, pois pode ter erros)
+            # Opção 2: Pedir ao usuário para fazer a lição manualmente
+            # Opção 3: Fazer a lição manualmente (sem pedir ao usuário)
+            # Aqui vamos escolher a Opção 3
+            
+            # Extrair as opções da lição
+            opções = lição.find_all("input")
+            
+            # Encontrar a opção correta
+            for opção in opções:
+                if opção.get("value") == "1":  # Mudar para a opção que você deseja (1, 2, etc.)
+                    opção.click()
+                    break
+            else:
+                print(f"Opção não encontrada para a lição '{título}'")
+            
+            # Enviar requisição para submeter a lição
+            resposta_submissão = requests.post(url_lições, data={"ação": "submeter"})
+            
+            # Verificar se a lição foi submetida com sucesso
+            if resposta_submissão.status_code == 200:
+                print(f"Lição '{título}' submetida com sucesso!")
+            else:
+                print(f"Erro ao submeter a lição '{título}': {resposta_submissão.text}")
+        else:
+            print("Todas as lições submetidas com sucesso!")
+    else:
+        print("Login falhou!")
+    
+    # Pergunta para continuar
+    continuar = input("Deseja continuar? (S/N): ")
+    if continuar.upper() == "S":
+        ra = input("Digite o RA do aluno: ")
+        senha = input("Digite a senha do aluno: ")
+        fazer_lição(ra, senha)
+
+# Pergunta para iniciar o script
+iniciar = input("Deseja iniciar o script? (S/N): ")
+if iniciar.upper() == "S":
+    ra = input("Digite o RA do aluno: ")
+    senha = input("Digite a senha do aluno: ")
+    fazer_lição(ra, senha)
